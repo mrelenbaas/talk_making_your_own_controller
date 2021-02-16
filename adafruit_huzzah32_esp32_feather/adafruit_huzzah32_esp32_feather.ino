@@ -49,7 +49,7 @@ bool toggle = false;
 bool firstLoop = true;
 
 int JoyStick_X = A2; //x
-int JoyStick_Y = A4; //y
+int JoyStick_Y = A3; //y
 int JoyStick_Z = 21; //key
 const int ANALOG_LOWER = 800;
 const int ANALOG_UPPER = 2800;
