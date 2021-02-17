@@ -10,6 +10,7 @@ const int IP_2 = 1;
 const int IP_3 = 3;
 const int PORT = 50007;
 const int DELAY = 10;
+const int BAUDE_RATE = 9600;
 
 // Pin constants.
 const int PIN_LED = 14;
@@ -52,10 +53,11 @@ int left_analog;
 int right_analog;
 int left3_digital;
 
+// Network components.
 AsyncUDP udp;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(BAUDE_RATE);
   pinMode(PIN_LED, OUTPUT);
   pinMode(PIN_UP, INPUT_PULLUP);
   pinMode(PIN_DOWN, INPUT_PULLUP);

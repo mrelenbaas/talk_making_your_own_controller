@@ -103,7 +103,7 @@ public class Finger : MonoBehaviour
         }
         else
         {
-            direction = udpReceive.GetLastPacket(clientName);
+            direction = udpReceive.Data;
             float speed = 10f;
             move = new Vector3(0f, 0f, 0f);
             if (direction.Contains(clientName)) {

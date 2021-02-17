@@ -8,43 +8,44 @@ using System.Threading;
 
 public class UDPReceive : MonoBehaviour
 {
-    Thread receiveThread;
-    UdpClient client;
+    // Network constants.
     private const int PORT = 50007;
-    private string lastReceivedUDPPacket;
-    private string lastPacket;
 
-    public string GetLastPacket(string clientName)
+    // Network components.
+    private IPEndPoint ip;
+
+    // Input.
+    private byte[] input;
+    private string data;
+
+    // Network components.
+    private UdpClient udp;
+    private Thread thread;
+
+    public string Data
     {
-        return lastPacket;
+        get { return data; }
     }
-
 
     public void Start()
     {
-        receiveThread = new Thread(new ThreadStart(ReceiveData));
-        receiveThread.IsBackground = true;
-        receiveThread.Start();
-    }
-
-    public string getLastreceivedUDPPacket()
-    {
-        return lastReceivedUDPPacket;
+        udp = new UdpClient(PORT);
+        thread = new Thread(new ThreadStart(ReceiveData))
+        {
+            IsBackground = true
+        };
+        thread.Start();
     }
 
     private void ReceiveData()
     {
-        client = new UdpClient(PORT);
         while (true)
         {
             try
             {
-                IPEndPoint anyIP = new IPEndPoint(IPAddress.Any, PORT);
-                byte[] data = client.Receive(ref anyIP);
-                string text = Encoding.UTF8.GetString(data);
-                lastReceivedUDPPacket = text;
-                lastReceivedUDPPacket = lastReceivedUDPPacket.Replace("0", "");
-                lastPacket = lastReceivedUDPPacket;
+                ip = new IPEndPoint(IPAddress.Any, PORT);
+                input = udp.Receive(ref ip);
+                data = Encoding.UTF8.GetString(input);
             }
             catch (Exception err)
             {
@@ -53,17 +54,12 @@ public class UDPReceive : MonoBehaviour
         }
     }
 
-    public string getLatestUDPPacket()
-    {
-        return lastReceivedUDPPacket;
-    }
-
     void OnDisable()
     {
-        if (receiveThread != null)
+        if (thread != null)
         {
-            receiveThread.Abort();
+            thread.Abort();
         }
-        client.Close();
+        udp.Close();
     }
 }
