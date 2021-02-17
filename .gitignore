@@ -1,2 +1,6 @@
 unity_server/Library/
 unity_server/Temp/
+unity_server/obj/
+unity_server/.vs/
+unity_server/Assembly-CSharp.csproj
+unity_server/unity_server.sln

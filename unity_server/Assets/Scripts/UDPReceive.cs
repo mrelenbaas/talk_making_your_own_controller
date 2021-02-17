@@ -17,7 +17,7 @@ public class UDPReceive : MonoBehaviour
     private string lastJava = "[java]";
     private string allReceivedUDPPackets = "";
 
-    public string lastSomething(string clientName)
+    public string GetLastPacket(string clientName)
     {
         string result = "";
         if (clientName.Contains("feather"))
@@ -41,15 +41,12 @@ public class UDPReceive : MonoBehaviour
 
     void OnGUI()
     {
-        //Rect rectObj = new Rect(40, 10, 200, 400);
         Rect rectObj = new Rect(40, 10, 200, 400);
         GUIStyle style = new GUIStyle();
         style.alignment = TextAnchor.UpperLeft;
         GUI.Box(rectObj, "" + lastJava, style);
 
         rectObj = new Rect(40,30, 200, 400);
-        //GUIStyle style = new GUIStyle();
-        //style.alignment = TextAnchor.UpperLeft;
         GUI.Box(rectObj, "" + lastFeather, style);
     }
 
@@ -78,7 +75,6 @@ public class UDPReceive : MonoBehaviour
                 {
                     lastJava = lastReceivedUDPPacket;
                 }
-                //print(lastReceivedUDPPacket);
                 allReceivedUDPPackets = allReceivedUDPPackets + text;
 
             }

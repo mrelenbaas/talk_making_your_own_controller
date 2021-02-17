@@ -103,8 +103,7 @@ public class Finger : MonoBehaviour
         }
         else
         {
-            //direction = udpReceive.getLastreceivedUDPPacket();
-            direction = udpReceive.lastSomething(clientName);
+            direction = udpReceive.GetLastPacket(clientName);
             float speed = 10f;
             move = new Vector3(0f, 0f, 0f);
             if (direction.Contains(clientName)) {
@@ -126,12 +125,12 @@ public class Finger : MonoBehaviour
                 }
                 transform.position += move * speed * Time.deltaTime;
 
-                if (direction.Contains("middle") && !middleBlock)
+                if (direction.Contains("l3") && !middleBlock)
                 {
                     setCamera("feather");
                     middleBlock = true;
                 }
-                if (!direction.Contains("middle") && middleBlock)
+                if (!direction.Contains("l3") && middleBlock)
                 {
                     middleBlock = false;
                 }
@@ -152,12 +151,9 @@ public class Finger : MonoBehaviour
             {
                 targetCamera.transform.position = broccoliCamera.transform.position;
             }
-            //targetCamera.transform.position = birdCamera.transform.position;
         }
-        //targetCamera.transform.position = birdCamera.transform.position;
         time += Time.deltaTime;
         float interpolationRatio = time / 1f;
-        //print("interpolationRatio: " + interpolationRatio);
         Vector3 interpolatedPosition = Vector3.Lerp(previousCamera.transform.position, targetCamera.transform.position, interpolationRatio);
         mainCamera.transform.position = interpolatedPosition;
     }

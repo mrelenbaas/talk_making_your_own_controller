@@ -26,7 +26,7 @@ const char DATA_UP[] = "up000,";
 const char DATA_DOWN[] = "down0,";
 const char DATA_LEFT[] = "left0,";
 const char DATA_RIGHT[] = "right,";
-const char DATA_MIDDLE[] = "left3_digital,";
+const char DATA_MIDDLE[] = "l3000,";
 const char DATA_ZERO = '0';
 const int DATA_SIZE = 6;
 const int DATA_START = 8;
@@ -48,7 +48,6 @@ int left_analog;
 int right_analog;
 int left3_digital;
 
-// Network packet.
 AsyncUDP udp;
 
 void setup() {
@@ -61,6 +60,7 @@ void setup() {
   pinMode(PIN_X, INPUT);
   pinMode(PIN_Y, INPUT);
   pinMode(PIN_LEFT_3, INPUT_PULLUP);
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(SERVICE_SET_IDENTIFIER, PASSWORD);
   WiFi.waitForConnectResult();
