@@ -16,7 +16,7 @@ public class UDPReceive : MonoBehaviour
 
     // Input.
     private byte[] input;
-    private string data;
+    private string data = "";
 
     // Network components.
     private UdpClient udp;
