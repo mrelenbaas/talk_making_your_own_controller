@@ -1,229 +1,152 @@
-//#include <ESP8266WiFi.h>
-//#include <WiFiUdp.h>
 #include "WiFi.h"
 #include "AsyncUDP.h"
 
-#ifndef STASSID
-#define STASSID "NETGEAR08"
-#define STAPSK  "largeskates190"
-#endif
+// Network constants.
+const char SERVICE_SET_IDENTIFIER[] = "NETGEAR08";
+const char PASSWORD[] = "largeskates190";
+const int PORT = 50007;
+const int DELAY = 10;
 
-const char * ssid = "NETGEAR08";
-const char * password = "largeskates190";
-AsyncUDP udp;
-unsigned int localPort = 50007;      // local port to listen on
-int pin = 14;
-int buzzer = 4;
-int upPin = 13;
-int downPin = 12;
-int leftPin = 27;
-int rightPin = 15;
-int up;
-int down;
-int left;
-int right;
-char upText[] = "up000,";
-char downText[] = "down0,";
-char leftText[] = "left0,";
-char rightText[] = "right,";
-char blankText[] = "000000";
-int upSize = 6;
-int downSize = 6;
-int leftSize = 6;
-int rightSize = 6;
-char middleText[] = "middle";
-
-// buffers for receiving and sending data
-//char packetBuffer[UDP_TX_PACKET_MAX_SIZE + 1]; //buffer to hold incoming packet,
-char  ReplyBuffer[] = "acknowledged\r\n";       // a string to send back
-char messageBuffer[] = "feather\r\n";
-char OFF[] = "off";
-int OFF_SIZE = 3;
-char ON[] = "on";
-int ON_SIZE = 2;
-char original[] = "feather,00000000000000000000000000000000000000\r\n";
-char output[] = "feather,00000000000000000000000000000000000000\r\n";
-int i_start = 8;
-const int SIZE = 48;
-bool toggle = false;
-bool firstLoop = true;
-
-int JoyStick_X = A2; //x
-int JoyStick_Y = A3; //y
-int JoyStick_Z = 21; //key
+// Pin constants.
+const int PIN_LED = 14;
+const int PIN_UP = 13;
+const int PIN_DOWN = 12;
+const int PIN_LEFT = 27;
+const int PIN_RIGHT = 15;
+const int PIN_X = A2;
+const int PIN_Y = A3;
+const int PIN_LEFT_3 = 21;
 const int ANALOG_LOWER = 800;
 const int ANALOG_UPPER = 2800;
 
-/*
-  int redpin = 14; // 11; //select the pin for the red LED
-  int bluepin = 12; // 10; // select the pin for the  blue LED
-  int greenpin = 13; // 9;// select the pin for the green LED
-  int val;
-*/
+// Output constants.
+const char OUTPUT_ORIGINAL[] = "feather,00000000000000000000000000000000000000\r\n";
+const int OUTPUT_SIZE = 48;
+const char DATA_UP[] = "up000,";
+const char DATA_DOWN[] = "down0,";
+const char DATA_LEFT[] = "left0,";
+const char DATA_RIGHT[] = "right,";
+const char DATA_MIDDLE[] = "left3_digital,";
+const char DATA_ZERO = '0';
+const int DATA_SIZE = 6;
+const int DATA_START = 8;
 
+// Output.
+char output[] = "feather,00000000000000000000000000000000000000\r\n";
+int output_index = 0;
 
+// Pin states.
+int up_digital;
+int down_digital;
+int left_digital;
+int right_digital;
+int x_analog;
+int y_analog;
+int up_analog;
+int down_analog;
+int left_analog;
+int right_analog;
+int left3_digital;
 
-WiFiUDP Udp;
+// Network packet.
+AsyncUDP udp;
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial);
-  pinMode(pin, OUTPUT);
-  digitalWrite(pin, HIGH);
-  pinMode(buzzer, OUTPUT);
-  pinMode(upPin, INPUT_PULLUP);
-  pinMode(downPin, INPUT_PULLUP);
-  pinMode(leftPin, INPUT_PULLUP);
-  pinMode(rightPin, INPUT_PULLUP);
-  pinMode(JoyStick_X, INPUT);
-  pinMode(JoyStick_Y, INPUT);
-  pinMode(JoyStick_Z, INPUT_PULLUP);
-
-
+  pinMode(PIN_LED, OUTPUT);
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_LEFT, INPUT_PULLUP);
+  pinMode(PIN_RIGHT, INPUT_PULLUP);
+  pinMode(PIN_X, INPUT);
+  pinMode(PIN_Y, INPUT);
+  pinMode(PIN_LEFT_3, INPUT_PULLUP);
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("WiFi Failed");
-    while (1) {
-      delay(1000);
-    }
-  }
-  if (udp.connect(IPAddress(192, 168, 1, 3), 50007)) {
-    Serial.println("UDP connected");
-    udp.onPacket([](AsyncUDPPacket packet) {
-      Serial.print("UDP Packet Type: ");
-      Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
-      Serial.print(", From: ");
-      Serial.print(packet.remoteIP());
-      Serial.print(":");
-      Serial.print(packet.remotePort());
-      Serial.print(", To: ");
-      Serial.print(packet.localIP());
-      Serial.print(":");
-      Serial.print(packet.localPort());
-      Serial.print(", Length: ");
-      Serial.print(packet.length());
-      Serial.print(", Data: ");
-      Serial.write(packet.data(), packet.length());
-      Serial.println();
-      //reply to the client
-      packet.printf("Got %u bytes of data", packet.length());
-    });
-    //Send unicast
-    udp.print("Hello Server!");
-  }
+  WiFi.begin(SERVICE_SET_IDENTIFIER, PASSWORD);
+  WiFi.waitForConnectResult();
+  udp.connect(IPAddress(192, 168, 1, 3), PORT);
+  digitalWrite(PIN_LED, HIGH);
 }
 
 void loop() {
-  up = !digitalRead(upPin);
-  down = !digitalRead(downPin);
-  left = !digitalRead(leftPin);
-  right = !digitalRead(rightPin);
+  update_state();
+  update_output(DATA_UP, (up_digital || up_analog));
+  update_output(DATA_DOWN, (down_digital || down_analog));
+  update_output(DATA_LEFT, (left_digital || left_analog));
+  update_output(DATA_RIGHT, (right_digital || right_analog));
+  update_output(DATA_MIDDLE, left3_digital != 0);
+  udp.broadcastTo(output, PORT);
+  reset();
+}
 
-  int x, y, z;
-  x = analogRead(JoyStick_X);
-  y = analogRead(JoyStick_Y);
-  z = digitalRead(JoyStick_Z);
-  //Serial.println(x);
-  Serial.print(x);
-  Serial.print(",");
-  Serial.print(y);
-  Serial.print(",");
-  Serial.println(z);
-
-  //if (z == 0)
-  //{
-  //  udp.broadcastTo(button, 50007);
-  //  delay(10);
-  //}
-
-  /*
-  Serial.print(up);
-  Serial.print(", ");
-  Serial.print(down);
-  Serial.print(", ");
-  Serial.print(left);
-  Serial.print(", ");
-  Serial.println(right);
-  */
-
-  if (up || (y < ANALOG_LOWER))
+void reset()
+{
+  delay(DELAY);
+  output_index = 0;
+  for (int i = 0; i < OUTPUT_SIZE; i++)
   {
-    for (int i = i_start, j = 0; j < upSize; ++i, ++j)
-    {
-      output[i] = upText[j];
-    }
+    output[i] = OUTPUT_ORIGINAL[i];
+  }
+}
+
+void update_state()
+{
+  up_digital = !digitalRead(PIN_UP);
+  down_digital = !digitalRead(PIN_DOWN);
+  left_digital = !digitalRead(PIN_LEFT);
+  right_digital = !digitalRead(PIN_RIGHT);
+  x_analog = analogRead(PIN_X);
+  y_analog = analogRead(PIN_Y);
+  up_analog = analog_above_threshold(y_analog);
+  down_analog = analog_below_threshold(y_analog);
+  left_analog = analog_above_threshold(x_analog);
+  right_analog = analog_below_threshold(x_analog);
+  left3_digital = !digitalRead(PIN_LEFT_3);
+}
+
+bool analog_above_threshold(int axis)
+{
+  if (axis < ANALOG_LOWER)
+  {
+    return true;
+  }
+  return false;
+}
+
+bool analog_below_threshold(int axis)
+{
+  if (axis > ANALOG_UPPER)
+  {
+    return true;
+  }
+  return false;
+}
+
+void update_output(const char text[], bool active)
+{
+  if (active)
+  {
+    write_data(text);
   }
   else
   {
-    for (int i = i_start, j = 0; j < upSize; ++i, ++j)
-    {
-      output[i] = blankText[j];
-    }
+    clear_data();
   }
-  if (down || (y > ANALOG_UPPER))
-  {
-    for (int i = (i_start + 6), j = 0; j < downSize; ++i, ++j)
-    {
-      output[i] = downText[j];
-    }
-  }
-  else
-  {
-    for (int i = (i_start + 6), j = 0; j < downSize; ++i, ++j)
-    {
-      output[i] = blankText[j];
-    }
-  }
-  if (left || (x < ANALOG_LOWER))
-  {
-    for (int i = (i_start + (6 * 2)), j = 0; j < leftSize; ++i, ++j)
-    {
-      output[i] = leftText[j];
-    }
-  }
-  else
-  {
-    for (int i = (i_start + (6 * 2)), j = 0; j < leftSize; ++i, ++j)
-    {
-      output[i] = blankText[j];
-    }
-  }
-  if (right || (x > ANALOG_UPPER))
-  {
-    for (int i = (i_start + (6 * 3)), j = 0; j < rightSize; ++i, ++j)
-    {
-      output[i] = rightText[j];
-    }
-  }
-  else
-  {
-    for (int i = (i_start + (6 * 3)), j = 0; j < rightSize; ++i, ++j)
-    {
-      output[i] = blankText[j];
-    }
-  }
-  
-  if (z == 0)
-  {
-    for (int i = (i_start + (6 * 4)), j = 0; j < rightSize; ++i, ++j)
-    {
-      output[i] = middleText[j];
-    }
-  }
-  else
-  {
-    for (int i = (i_start + (6 * 4)), j = 0; j < rightSize; ++i, ++j)
-    {
-      output[i] = blankText[j];
-    }
-  }
-  
-  udp.broadcastTo(output, 50007);
-  delay(10);
+  ++output_index;
+}
 
-  for (int i = 0; i < SIZE; i++)
+void write_data(const char text[])
+{
+  for (int i = (DATA_START + (DATA_SIZE * output_index)), j = 0; j < DATA_SIZE; ++i, ++j)
   {
-    output[i] = original[i];
+    output[i] = text[j];
+  }
+}
+
+void clear_data()
+{
+  for (int i = (DATA_START + (DATA_SIZE * output_index)), j = 0; j < DATA_SIZE; ++i, ++j)
+  {
+    output[i] = DATA_ZERO;
   }
 }
