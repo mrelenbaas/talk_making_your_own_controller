@@ -4,6 +4,10 @@
 // Network constants.
 const char SERVICE_SET_IDENTIFIER[] = "NETGEAR08";
 const char PASSWORD[] = "largeskates190";
+const int IP_0 = 192;
+const int IP_1 = 168;
+const int IP_2 = 1;
+const int IP_3 = 3;
 const int PORT = 50007;
 const int DELAY = 10;
 
@@ -64,7 +68,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(SERVICE_SET_IDENTIFIER, PASSWORD);
   WiFi.waitForConnectResult();
-  udp.connect(IPAddress(192, 168, 1, 3), PORT);
+  udp.connect(IPAddress(IP_0, IP_1, IP_2, IP_3), PORT);
   digitalWrite(PIN_LED, HIGH);
 }
 
