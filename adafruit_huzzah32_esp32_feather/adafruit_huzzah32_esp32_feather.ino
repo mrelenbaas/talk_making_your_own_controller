@@ -7,7 +7,7 @@ const char PASSWORD[] = "largeskates190";
 const int IP_0 = 192;
 const int IP_1 = 168;
 const int IP_2 = 1;
-const int IP_3 = 3;
+const int IP_3 = 70;
 const int PORT = 50007;
 const int DELAY = 10;
 const int BAUDE_RATE = 9600;
@@ -66,7 +66,6 @@ void setup() {
   pinMode(PIN_X, INPUT);
   pinMode(PIN_Y, INPUT);
   pinMode(PIN_LEFT_3, INPUT_PULLUP);
-
   WiFi.mode(WIFI_STA);
   WiFi.begin(SERVICE_SET_IDENTIFIER, PASSWORD);
   WiFi.waitForConnectResult();
@@ -103,10 +102,10 @@ void update_state()
   right_digital = !digitalRead(PIN_RIGHT);
   x_analog = analogRead(PIN_X);
   y_analog = analogRead(PIN_Y);
-  up_analog = analog_above_threshold(y_analog);
-  down_analog = analog_below_threshold(y_analog);
-  left_analog = analog_above_threshold(x_analog);
-  right_analog = analog_below_threshold(x_analog);
+  up_analog = !analog_above_threshold(y_analog);
+  down_analog = !analog_below_threshold(y_analog);
+  left_analog = !analog_above_threshold(x_analog);
+  right_analog = !analog_below_threshold(x_analog);
   left3_digital = !digitalRead(PIN_LEFT_3);
 }
 
@@ -114,18 +113,18 @@ bool analog_above_threshold(int axis)
 {
   if (axis < ANALOG_LOWER)
   {
-    return true;
+    return false;
   }
-  return false;
+  return true;
 }
 
 bool analog_below_threshold(int axis)
 {
   if (axis > ANALOG_UPPER)
   {
-    return true;
+    return false;
   }
-  return false;
+  return true;
 }
 
 void update_output(const char text[], bool active)

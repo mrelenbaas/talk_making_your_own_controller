@@ -1,0 +1,2 @@
+Documentation: https://learn.adafruit.com/adafruit-huzzah32-esp32-feather
+Repository: https://github.com/espressif/arduino-esp32

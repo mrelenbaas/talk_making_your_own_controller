@@ -9,7 +9,7 @@ public class Finger : MonoBehaviour
     private const float OFFSET = 2f;
 
     public bool isLocal = true;
-    public UDPReceive udpReceive;
+    public UDP udp;
     public string clientName = "";
 
     private float pythonX = 0.0f;
@@ -103,10 +103,11 @@ public class Finger : MonoBehaviour
         }
         else
         {
-            direction = udpReceive.Data;
+            direction = udp.Data;
             float speed = 10f;
             move = new Vector3(0f, 0f, 0f);
-            if (direction.Contains(clientName)) {
+            if (direction.Contains(clientName))
+            {
                 if (direction.Contains("up"))
                 {
                     move += new Vector3(0f, 0f, 1f);

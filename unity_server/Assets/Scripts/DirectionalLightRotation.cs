@@ -8,7 +8,7 @@ public class DirectionalLightRotation : MonoBehaviour
     public Transform directionalLight2;
 
     float x = 0f;
-    float period = 10f;
+    float period = 20f;
     float time = 1.0f;
 
     void Update()
@@ -28,6 +28,5 @@ public class DirectionalLightRotation : MonoBehaviour
             -20f,
             directionalLight.rotation.z
         );
-        //print(directionalLight2.rotation);
     }
 }
