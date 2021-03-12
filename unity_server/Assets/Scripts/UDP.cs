@@ -24,7 +24,10 @@ public class UDP : MonoBehaviour
 
     public string Data
     {
-        get { return data; }
+        get
+        {
+            return data;
+        }
     }
 
     public void Start()

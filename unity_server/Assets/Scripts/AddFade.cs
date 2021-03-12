@@ -24,5 +24,6 @@ public class AddFade : MonoBehaviour
         StandardShaderUtils.ChangeRenderMode(shadowMaterial, StandardShaderUtils.BlendMode.Fade);
         shadow.GetComponent<Renderer>().material = shadowMaterial;
         shadow.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+        shadow.GetComponent<MeshCollider>().enabled = false;
     }
 }
